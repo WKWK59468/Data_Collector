@@ -5,11 +5,21 @@
 <mapper namespace="com.jrong.dataCollector.dao.ttopBankExchangerateHistoryMapper">
 
     <select id="GetttopBankExchangerateHistory">
-        select * from ttop_bank_exchangerate_history;
+        SELECT * FROM ttop_bank_exchangerate_history;
     </select>
 
-<!--    <insert id="CreatettopBankExchangerateHistory"  >-->
-<!--        insert into ttop_bank_exchangerate_history(bankCode, exchangeContent, createDate) values(#{bankCode}, #{exchangeContent}, #{createDate});-->
-<!--    </insert>-->
+    <insert id="SavettopBankExchangerateHistory" parameterType="java.util.List">
+        INSERT INTO ttop_bank_exchangerate_history(bankCode, exchangeContent, createDate) VALUES
+        <foreach item="item" index="index" collection="ttopBankExchangerateHistoryList" separator=",">
+            (#{item.bankCode}, #{item.exchangeContent}, #{item.createDate})
+        </foreach>
+    </insert>
 
+    <delete id="DeletettopBankExchangerateHistory">
+        DELETE FROM ttop_bank_exchangerate_history WHERE id = #{id};
+    </delete>
+
+    <update id="UpdatettopBankExchangerateHistory">
+        UPDATE ttop_bank_exchangerate_history SET exchangeContent = #{exchangeContent} WHERE id = #{id};
+    </update>
 </mapper>

@@ -1,9 +1,8 @@
 package com.jrong.dataCollector.model;
 
-public class CreatettopBankExchangerateHistoryParameter {
+public class CurrentData {
     private String bankCode;
     private String exchangeContent;
-    private String createDate;
 
     public String getBankCode() {
         return bankCode;
@@ -21,20 +20,11 @@ public class CreatettopBankExchangerateHistoryParameter {
         this.exchangeContent = exchangeContent;
     }
 
-    public String getCreateDate() {
-        return createDate;
-    }
-
-    public void setCreateDate(String createDate) {
-        this.createDate = createDate;
-    }
-
     @Override
     public String toString() {
-        return "CreatettopBankExchangerateHistoryParameter{" +
+        return "CurrentData{" +
                 "bankCode='" + bankCode + '\'' +
                 ", exchangeContent='" + exchangeContent + '\'' +
-                ", createDate=" + createDate +
                 '}';
     }
 }

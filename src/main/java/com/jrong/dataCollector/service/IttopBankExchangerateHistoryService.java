@@ -1,11 +1,13 @@
 package com.jrong.dataCollector.service;
 
-import com.jrong.dataCollector.model.CreatettopBankExchangerateHistoryParameter;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.jrong.dataCollector.model.ttopBankExchangerateHistory;
 
 import java.util.List;
 
 public interface IttopBankExchangerateHistoryService {
     List<ttopBankExchangerateHistory> GetttopBankExchangerateHistory();
-    void CreatettopBankExchangerateHistory(CreatettopBankExchangerateHistoryParameter ttopBankExchangerateHistory);
+    boolean SavettopBankExchangerateHistory() throws JsonProcessingException;
+    boolean DeletettopBankExchangerateHistory(int id);
+    boolean UpdatettopBankExchangerateHistory(int id, String exchangeContent);
 }
