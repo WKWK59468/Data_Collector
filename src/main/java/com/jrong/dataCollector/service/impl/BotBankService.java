@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.jrong.dataCollector.helper.ConvertByteArrayToStringHelper;
 import com.jrong.dataCollector.helper.LineNotifyHelper;
-import com.jrong.dataCollector.service.IBOTBankService;
+import com.jrong.dataCollector.service.IBotBankService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
@@ -16,13 +16,22 @@ import java.sql.Timestamp;
 import java.util.Arrays;
 
 @Service
-public class BOTBankService implements IBOTBankService {
+public class BotBankService implements IBotBankService {
     @Value("${botUrl}")
     private String botUrl;
+    private final ConvertByteArrayToStringHelper convertByteArrayToStringHelper;
+    private final LineNotifyHelper lineNotifyHelper;
+    private final CheckRateExistService checkRateExistService;
+
     @Autowired
-    private ConvertByteArrayToStringHelper convertByteArrayToStringHelper;
-    @Autowired
-    private LineNotifyHelper lineNotifyHelper;
+    public BotBankService(
+            ConvertByteArrayToStringHelper convertByteArrayToStringHelper,
+            LineNotifyHelper lineNotifyHelper,
+            CheckRateExistService checkRateExistService){
+        this.convertByteArrayToStringHelper = convertByteArrayToStringHelper;
+        this.lineNotifyHelper = lineNotifyHelper;
+        this.checkRateExistService = checkRateExistService;
+    }
 
     @Override
     public String GetBotRateData() {
@@ -46,6 +55,8 @@ public class BOTBankService implements IBOTBankService {
         ArrayNode arrayNode = jsonArray.createArrayNode();
         String json = "";
 
+//        Arrays.stream(lines).forEach();
+
         for (int i = 0 ; i < lines.length ; i++) {
             String line = lines[i];
             if(i == 0){continue;}
@@ -67,10 +78,11 @@ public class BOTBankService implements IBOTBankService {
 
                 json = jsonArray.writerWithDefaultPrettyPrinter().writeValueAsString(arrayNode);
             } catch (Exception e) {
-                lineNotifyHelper.SendMessage("BOTBankService Error: " + e.getMessage());
+                lineNotifyHelper.SendMessage("BotBankService Error: " + e.getMessage());
                 throw new RuntimeException(e);
             }
         }
+        checkRateExistService.CheckRateExist(json);
         return json;
     }
 }

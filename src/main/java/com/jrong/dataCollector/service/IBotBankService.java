@@ -1,5 +1,5 @@
 package com.jrong.dataCollector.service;
 
-public interface IBOTBankService {
+public interface IBotBankService {
     String GetBotRateData();
 }

@@ -1,6 +1,6 @@
 package com.jrong.dataCollector.model.request;
 
-public class DeletettopBankExchangerateHistory {
+public class DeleteBotBankHistoryRate {
     private int id;
 
     public int getId() {

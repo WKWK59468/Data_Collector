@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jrong.dataCollector.dao.BotBankHistoryRateMapper">
+
+    <select id="GetBotHistoryRate">
+        SELECT * FROM bot_bank_history_rate;
+    </select>
+
+    <insert id="SaveBotBankHistoryRate" parameterType="java.util.List">
+        INSERT INTO bot_bank_history_rate(bankCode, exchangeContent, createDate) VALUES
+        <foreach item="item" index="index" collection="botBankHistoryRateList" separator=",">
+            (#{item.bankCode}, #{item.exchangeContent}, #{item.createDate})
+        </foreach>
+    </insert>
+
+    <delete id="DeleteBotBankHistoryRate">
+        DELETE FROM bot_bank_history_rate WHERE id = #{id};
+    </delete>
+
+    <update id="UpdateBotBankHistoryRate">
+        UPDATE bot_bank_history_rate SET  = #{exchangeContent} WHERE id = #{id};
+    </update>
+</mapper>

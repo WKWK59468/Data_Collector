@@ -1,9 +1,18 @@
-package com.jrong.dataCollector.model.request;
+package com.jrong.dataCollector.model;
 
-public class CreatettopBankExchangerateHistory {
+public class BotBankRateData {
+    private int id;
     private String bankCode;
     private String exchangeContent;
     private String createDate;
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
 
     public String getBankCode() {
         return bankCode;
@@ -29,12 +38,5 @@ public class CreatettopBankExchangerateHistory {
         this.createDate = createDate;
     }
 
-    @Override
-    public String toString() {
-        return "CreatettopBankExchangerateHistoryParameter{" +
-                "bankCode='" + bankCode + '\'' +
-                ", exchangeContent='" + exchangeContent + '\'' +
-                ", createDate=" + createDate +
-                '}';
-    }
+
 }

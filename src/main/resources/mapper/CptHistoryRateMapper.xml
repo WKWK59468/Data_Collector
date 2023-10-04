@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jrong.dataCollector.dao.CptHistoryRateMapper">
+
+    <select id="GetCptHistoryRate">
+        SELECT * FROM cpt_history_rate;
+    </select>
+
+    <insert id="SaveCptHistoryRate" parameterType="java.util.List">
+        INSERT INTO cpt_history_rate(bankCode, year, month, tenDays, buy, sell) VALUES
+        <foreach item="item" index="index" collection="CptRateDataList" separator=",">
+            (#{item.bankCode}, #{item.year}, #{item.month}, #{item.tenDays}, #{item.buy}, #{item.sell} )
+        </foreach>
+    </insert>
+</mapper>

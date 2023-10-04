@@ -1,6 +1,6 @@
 package com.jrong.dataCollector.model.request;
 
-public class PatchttopBankExchangerateHistory {
+public class PatchBotBankHistoryRate {
     private int id;
     private String exchangeContent;
 
