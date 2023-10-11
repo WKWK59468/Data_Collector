@@ -1,5 +1,6 @@
 package com.jrong.dataCollector.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.jrong.dataCollector.model.request.DeleteBotBankHistoryRate;
 import com.jrong.dataCollector.model.request.PatchBotBankHistoryRate;
 import com.jrong.dataCollector.model.response.DataOperatorResponse;
@@ -13,77 +14,69 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/botBankRate")
 public class BotBankRateController {
-    private final BotBankRateService BotBankRateService;
-    private final BotBankService botBankService;
-    private final LineNotifyHelper lineNotifyHelper;
-
     @Autowired
-    public BotBankRateController(
-            BotBankRateService botBankRateService,
-            BotBankService botBankService,
-            LineNotifyHelper lineNotifyHelper){
-        BotBankRateService = botBankRateService;
-        this.botBankService = botBankService;
-        this.lineNotifyHelper = lineNotifyHelper;
-    }
+    private BotBankRateService botBankRateService;
+    @Autowired
+    private BotBankService botBankService;
+    @Autowired
+    private LineNotifyHelper lineNotifyHelper;
+
 
     @GetMapping("/bot")
-    public ResponseEntity<String> GetRateBotData(){
+    public ResponseEntity<String> GetRateBotData() {
         return ResponseEntity.ok().body(botBankService.GetBotRateData());
     }
 
-
     @GetMapping("/history")
     public ResponseEntity<List<BotBankRateData>> GetBotBankHistoryRate(){
-        var data = BotBankRateService.GetBotBankHistoryRate();
-        if (data == null) {
-            lineNotifyHelper.SendMessage("Get BotBank History Rate Failure");
-            return ResponseEntity.notFound().build();
-        }
-        lineNotifyHelper.SendMessage("Get BotBank History Rate Success");
-        return ResponseEntity.ok().body(data);
+        return ResponseEntity.ok().body(botBankRateService.GetBotBankHistoryRate());
     }
 
     @GetMapping("/current")
     public String GetBotBankCurrentRate(){
-        return BotBankRateService.GetBotBankCurrentRate();
+        return botBankRateService.GetBotBankCurrentRate();
     }
 
     @PostMapping("/history")
-    public ResponseEntity<DataOperatorResponse> SaveBotBankHistoryRate(){
+    public ResponseEntity<DataOperatorResponse> SaveBotBankHistoryRate() throws JsonProcessingException {
         DataOperatorResponse response = new DataOperatorResponse();
-        boolean isSuccess = BotBankRateService.SaveBotBankHistoryRate();
-        response.setSuccess(isSuccess);
-        if(!isSuccess){
-            response.setMessage("Save Exchangerate Failure");
-            lineNotifyHelper.SendMessage("Save Exchangerate Failure");
-            return ResponseEntity.badRequest().body(response);
-        }
-        response.setMessage("Save Exchangerate Success");
-        lineNotifyHelper.SendMessage("Save Exchangerate Success");
+        Optional<Boolean> isSuccess = Optional.of(botBankRateService.SaveBotBankHistoryRate());
+        isSuccess.ifPresentOrElse(
+                success -> {
+                    response.setSuccess(isSuccess.get());
+                    response.setMessage("Save Bot History Rate Success");
+                    lineNotifyHelper.SendMessage("Save Bot History Rate Success");
+                },
+                ()-> {
+                    response.setSuccess(isSuccess.get());
+                    response.setMessage("Save Bot History Rate Failure");
+                    lineNotifyHelper.SendMessage("Save Bot History Rate Failure");
+                }
+        );
         return ResponseEntity.ok().body(response);
     }
 
-    @DeleteMapping("/history")
-    public ResponseEntity<DataOperatorResponse> DeleteBotBankHistoryRate(@NotNull @RequestBody DeleteBotBankHistoryRate deleteBotBankHistoryRate){
-        DataOperatorResponse response = new DataOperatorResponse();
-        boolean isSuccess = BotBankRateService.DeleteBotBankHistoryRate(
-                deleteBotBankHistoryRate.getId()
-        );
-        response.setSuccess(isSuccess);
-        if (!isSuccess){
-            response.setMessage("Delete Exchangerate " + deleteBotBankHistoryRate.getId() + " Failure");
-            lineNotifyHelper.SendMessage("Delete Exchangerate " + deleteBotBankHistoryRate.getId() + " Failure");
-            return ResponseEntity.badRequest().body(response);
-        }
-        response.setMessage("Delete Exchangerate " + deleteBotBankHistoryRate.getId() + " Success");
-        lineNotifyHelper.SendMessage("Delete Exchangerate " + deleteBotBankHistoryRate.getId() + " Success");
-        return ResponseEntity.ok().body(response);
-    }
+//    @DeleteMapping("/history")
+//    public ResponseEntity<DataOperatorResponse> DeleteBotBankHistoryRate(@NotNull @RequestBody DeleteBotBankHistoryRate deleteBotBankHistoryRate){
+//        DataOperatorResponse response = new DataOperatorResponse();
+//        boolean isSuccess = BotBankRateService.DeleteBotBankHistoryRate(
+//                deleteBotBankHistoryRate.getId()
+//        );
+//        response.setSuccess(isSuccess);
+//        if (!isSuccess){
+//            response.setMessage("Delete Exchangerate " + deleteBotBankHistoryRate.getId() + " Failure");
+//            lineNotifyHelper.SendMessage("Delete Exchangerate " + deleteBotBankHistoryRate.getId() + " Failure");
+//            return ResponseEntity.badRequest().body(response);
+//        }
+//        response.setMessage("Delete Exchangerate " + deleteBotBankHistoryRate.getId() + " Success");
+//        lineNotifyHelper.SendMessage("Delete Exchangerate " + deleteBotBankHistoryRate.getId() + " Success");
+//        return ResponseEntity.ok().body(response);
+//    }
 
 //    @PatchMapping("/history")
 //    public ResponseEntity<DataOperatorResponse> UpdateBotBankHistoryRate(@NotNull @RequestBody PatchBotBankHistoryRate patchBotBankHistoryRate){

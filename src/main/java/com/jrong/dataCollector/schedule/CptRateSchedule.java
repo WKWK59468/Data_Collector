@@ -4,91 +4,93 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jrong.dataCollector.helper.LineNotifyHelper;
+import com.jrong.dataCollector.listener.RateEvent;
+import com.jrong.dataCollector.model.BotBankRateData;
+import com.jrong.dataCollector.model.CptRateData;
 import com.jrong.dataCollector.service.impl.CptRateService;
 import com.jrong.dataCollector.service.impl.CptService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Component
 public class CptRateSchedule {
-    private final ObjectMapper objectMapper;
-    private final StringRedisTemplate stringRedisTemplate;
-    private final CptService cptService;
-    private final CptRateService cptRateService;
-    private final LineNotifyHelper lineNotifyHelper;
-    private final AtomicInteger consecutiveFailures  = new AtomicInteger(0);
-
     @Autowired
-    public CptRateSchedule(StringRedisTemplate stringRedisTemplate,
-                           ObjectMapper objectMapper,
-                           CptService cptService,
-                           CptRateService cptRateService,
-                           LineNotifyHelper lineNotifyHelper){
-        this.stringRedisTemplate = stringRedisTemplate;
-        this.objectMapper = objectMapper;
-        this.cptService = cptService;
-        this.cptRateService = cptRateService;
-        this.lineNotifyHelper = lineNotifyHelper;
-    }
+    private ApplicationContext context;
+    @Autowired
+    private ObjectMapper objectMapper;
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
+    @Autowired
+    private CptService cptService;
+    @Autowired
+    private CptRateService cptRateService;
+    @Autowired
+    private LineNotifyHelper lineNotifyHelper;
+    private final AtomicInteger consecutiveFailures = new AtomicInteger(0);
 
     @Scheduled(cron = "0 0 0/5 * * ?")
-    public void SaveCptCurrentRateData() {
-        long currentTime = System.currentTimeMillis();
+    public void SaveCptCurrentRateData(){
         try {
-            String value = cptService.GetCptCurrentData();
-            JsonNode currentData = objectMapper.readTree(value);
-
+            String values = cptService.GetCptCurrentData();
+            JsonNode currentData = objectMapper.readTree(values);
+            Optional<JsonNode> currentDataOpt = Optional.of(currentData);
+            currentDataOpt.ifPresent(this::dataProcess);
             stringRedisTemplate.opsForValue().set("CptCurrentData", currentData.toString());
-
             consecutiveFailures.set(0);
 
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
         } catch (Exception e) {
-            int lastConsecutiveFailures = consecutiveFailures.get();
-            consecutiveFailures.set(lastConsecutiveFailures + 1);
+            Optional<Integer> lastConsecutiveFailures = Optional.of(consecutiveFailures.get());
+            lastConsecutiveFailures.ifPresent( lastFailures -> consecutiveFailures.set(lastFailures+1));
 
-            if (lastConsecutiveFailures >= 2) {
-                lineNotifyHelper.SendMessage("BotRate Schedule Update Failure");
+            lastConsecutiveFailures.filter(lastFailures -> lastFailures >= 2).ifPresent(lastFailures -> {
+                lineNotifyHelper.SendMessage("CptRate Schedule Update Failure");
                 consecutiveFailures.set(0);
-            }
+            });
 
-            lineNotifyHelper.SendMessage("BotRate Schedule Error: " + e.getMessage());
+            lineNotifyHelper.SendMessage("CptRate Schedule Error: " + e.getMessage());
             throw new RuntimeException(e);
         }
     }
 
-
     @Scheduled(cron = "0 10 1,8,18 5,6,7,15,16,17,25,26,27 * ?")
     public void CptHistoryRateData() {
-        lineNotifyHelper.SendMessage("Scheduled: Get Cpt HistoryRate Data Start");
         try {
             String value = cptService.GetCptHistoryData();
             JsonNode cptHistoryData = objectMapper.readTree(value);
 
-            if (!cptHistoryData.isEmpty()) {
-                lineNotifyHelper.SendMessage("Get History Data Success");
+            lineNotifyHelper.SendMessage("Get History Data Success");
 
-                var isSuccess = cptRateService.SaveCptHistoryRate(cptHistoryData.toString());
-                if (isSuccess){
-                    lineNotifyHelper.SendMessage("Save Cpt History Data Success");
-                }else{
-                    lineNotifyHelper.SendMessage("Save Cpt History Data Failure");
-                }
-            }else{
-                lineNotifyHelper.SendMessage("Get Cpt History Data Failure");
-            }
+            Optional<Boolean> isSuccess = Optional.of(cptRateService.SaveCptHistoryRate(cptHistoryData.toString()));
+            isSuccess.ifPresentOrElse(
+                    success -> lineNotifyHelper.SendMessage("Save Cpt History Data Success"),
+                    () -> lineNotifyHelper.SendMessage("Save Cpt History Data Failure"));
 
-        } catch (JsonProcessingException e) {
-            lineNotifyHelper.SendMessage("Cpt History Schedule JsonProcessingException: " + e.getMessage());
-            throw new RuntimeException(e);
-        } catch (Exception e){
+        } catch (Exception e) {
             lineNotifyHelper.SendMessage("Cpt History Schedule Error: " + e.getMessage());
             throw new RuntimeException(e);
         }
+    }
+
+    private void dataProcess(JsonNode data) {
+        data.forEach(value -> {
+            try {
+                CptRateData rateData = objectMapper.treeToValue(value, CptRateData.class);
+
+                Optional<CptRateData> dataOpt = Optional.of(rateData);
+
+                dataOpt.filter(opt -> opt.getBankCode().equals("JPY") && opt.getBuy() <= 0.22).ifPresent(opt -> {
+                    context.publishEvent(new RateEvent(this, "CPT", rateData.getBuy()));
+                });
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
 }

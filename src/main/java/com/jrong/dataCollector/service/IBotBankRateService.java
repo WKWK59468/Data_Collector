@@ -9,6 +9,5 @@ import java.util.List;
 public interface IBotBankRateService {
     List<BotBankRateData> GetBotBankHistoryRate();
     boolean SaveBotBankHistoryRate() throws JsonProcessingException;
-    boolean DeleteBotBankHistoryRate(int id);
     String GetBotBankCurrentRate();
 }

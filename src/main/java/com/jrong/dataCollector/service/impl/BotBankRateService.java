@@ -15,88 +15,86 @@ import org.springframework.stereotype.Service;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class BotBankRateService implements IBotBankRateService {
-    private final BotBankHistoryRateMapper BotBankHistoryRateMapper;
-    private final BotBankService botBankService;
-    private final LineNotifyHelper lineNotifyHelper;
-    private final StringRedisTemplate stringRedisTemplate;
-
     @Autowired
-    public BotBankRateService(
-            BotBankHistoryRateMapper BotBankHistoryRateMapper,
-            BotBankService botBankService,
-            LineNotifyHelper lineNotifyHelper,
-            StringRedisTemplate stringRedisTemplate){
-        this.BotBankHistoryRateMapper = BotBankHistoryRateMapper;
-        this.botBankService = botBankService;
-        this.lineNotifyHelper = lineNotifyHelper;
-        this.stringRedisTemplate = stringRedisTemplate;
-    }
+    private BotBankHistoryRateMapper BotBankHistoryRateMapper;
+    @Autowired
+    private BotBankService botBankService;
+    @Autowired
+    private LineNotifyHelper lineNotifyHelper;
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
 
     @Override
     public List<BotBankRateData> GetBotBankHistoryRate(){
-        return BotBankHistoryRateMapper.GetBotHistoryRate();
+        Optional<List<BotBankRateData>> value = Optional.ofNullable(BotBankHistoryRateMapper.GetBotHistoryRate());
+
+        value.ifPresentOrElse(
+                data -> lineNotifyHelper.SendMessage("Get Bot History Rate Schedule Success"),
+                () -> lineNotifyHelper.SendMessage("Get Bot History Rate Schedule Failure"));
+
+        return value.orElse(null);
     }
 
     @Override
-    public String GetBotBankCurrentRate(){
-        try {
-            String value = stringRedisTemplate.opsForValue().get("BotRateData");
+    public String GetBotBankCurrentRate() {
+        Optional<String> value = Optional.ofNullable(stringRedisTemplate.opsForValue().get("BotRateData"));
 
-            if (value == null) {
-                lineNotifyHelper.SendMessage("Get Bot Current Rate Schedule Failure");
-            }
+        value.ifPresentOrElse(
+                data -> lineNotifyHelper.SendMessage("Get Bot Current Rate Schedule Success"),
+                () -> lineNotifyHelper.SendMessage("Get Bot Current Rate Schedule Failure"));
 
-            return value;
-        }
-        catch (Exception e) {
-            lineNotifyHelper.SendMessage("Get Bot Current Rate Schedule Error: " + e.getMessage());
-            throw new RuntimeException(e);
-        }
+        return value.orElse(null);
     }
 
     @Override
-    public boolean SaveBotBankHistoryRate() {
+    public boolean SaveBotBankHistoryRate() throws JsonProcessingException {
+        List<SaveBotBankHistoryRate> SaveBotBankHistoryRateList = new ArrayList<>();
+        ObjectMapper mapper = new ObjectMapper();
+
+        JsonNode rateDataMap = mapper.readTree(botBankService.GetBotRateData());
+
+        rateDataMap.forEach( data -> {
+            SaveBotBankHistoryRate botBankHistoryRate = new SaveBotBankHistoryRate();
+            dataProcess(data, botBankHistoryRate);
+            SaveBotBankHistoryRateList.add(botBankHistoryRate);
+        });
+
+        return BotBankHistoryRateMapper.SaveBotBankHistoryRate(SaveBotBankHistoryRateList) > 0;
+    }
+
+    private static void dataProcess(JsonNode data, SaveBotBankHistoryRate botBankHistoryRate) {
         try {
-            List<SaveBotBankHistoryRate> SaveBotBankHistoryRateList = new ArrayList<>();
             Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-            ObjectMapper mapper = new ObjectMapper();
+            ObjectMapper objectMapper = new ObjectMapper();
+            SaveBotBankHistoryRate newBotRateRateData = objectMapper.treeToValue(data, SaveBotBankHistoryRate.class);
 
-            String rateData = botBankService.GetBotRateData();
-            JsonNode rateDataMap = mapper.readTree(rateData);
+            botBankHistoryRate.setBank_code(newBotRateRateData.getBank_code());
+            botBankHistoryRate.setBuy_bank_note_rate(newBotRateRateData.getBuy_bank_note_rate());
+            botBankHistoryRate.setBuy_spot_rate(newBotRateRateData.getBuy_spot_rate());
+            botBankHistoryRate.setBuy_10days_forward_rate(newBotRateRateData.getBuy_10days_forward_rate());
+            botBankHistoryRate.setBuy_30days_forward_rate(newBotRateRateData.getBuy_30days_forward_rate());
+            botBankHistoryRate.setBuy_60days_forward_rate(newBotRateRateData.getBuy_60days_forward_rate());
+            botBankHistoryRate.setBuy_90days_forward_rate(newBotRateRateData.getBuy_90days_forward_rate());
+            botBankHistoryRate.setBuy_120days_forward_rate(newBotRateRateData.getBuy_120days_forward_rate());
+            botBankHistoryRate.setBuy_150days_forward_rate(newBotRateRateData.getBuy_150days_forward_rate());
+            botBankHistoryRate.setBuy_180days_forward_rate(newBotRateRateData.getBuy_180days_forward_rate());
+            botBankHistoryRate.setSell_bank_note_rate(newBotRateRateData.getSell_bank_note_rate());
+            botBankHistoryRate.setSell_spot_rate(newBotRateRateData.getSell_spot_rate());
+            botBankHistoryRate.setSell_10days_forward_rate(newBotRateRateData.getSell_10days_forward_rate());
+            botBankHistoryRate.setSell_30days_forward_rate(newBotRateRateData.getSell_30days_forward_rate());
+            botBankHistoryRate.setSell_60days_forward_rate(newBotRateRateData.getSell_60days_forward_rate());
+            botBankHistoryRate.setSell_90days_forward_rate(newBotRateRateData.getSell_90days_forward_rate());
+            botBankHistoryRate.setSell_120days_forward_rate(newBotRateRateData.getSell_120days_forward_rate());
+            botBankHistoryRate.setSell_150days_forward_rate(newBotRateRateData.getSell_150days_forward_rate());
+            botBankHistoryRate.setSell_180days_forward_rate(newBotRateRateData.getSell_180days_forward_rate());
+            botBankHistoryRate.setCreate_date(timestamp.toString());
 
-            rateDataMap.forEach( data -> {
-                try {
-                    ObjectMapper objectMapper = new ObjectMapper();
-                    SaveBotBankHistoryRate newBotRateRateData = objectMapper.treeToValue(data, SaveBotBankHistoryRate.class);
-                    SaveBotBankHistoryRate botBankHistoryRate = new SaveBotBankHistoryRate();
-
-                    botBankHistoryRate.setBankCode(newBotRateRateData.getBankCode());
-                    botBankHistoryRate.setExchangeContent(newBotRateRateData.getExchangeContent());
-                    botBankHistoryRate.setCreateDate(timestamp.toString());
-                    SaveBotBankHistoryRateList.add(botBankHistoryRate);
-
-                } catch (JsonProcessingException e) {
-                    lineNotifyHelper.SendMessage("SaveBotBankHistoryRate JsonProcessingException: " + e.getMessage());
-                    throw new RuntimeException(e);
-                }
-            });
-            return BotBankHistoryRateMapper.SaveBotBankHistoryRate(SaveBotBankHistoryRateList) > 0;
-        } catch (JsonProcessingException e) {
-            lineNotifyHelper.SendMessage("SaveBotBankHistoryRate JsonProcessingException: " + e.getMessage());
+        }catch (JsonProcessingException e){
             throw new RuntimeException(e);
         }
     }
-
-    @Override
-    public boolean DeleteBotBankHistoryRate(int id){
-        return BotBankHistoryRateMapper.DeleteBotBankHistoryRate(id) > 0;
-    }
-
-//    @Override
-//    public boolean UpdateBotBankHistoryRate(BotBankRateData botBankRateData){
-//        return BotBankHistoryRateMapper.UpdateBotBankHistoryRate(botBankRateData) > 0;
-//    }
 }

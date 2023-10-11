@@ -9,17 +9,23 @@
     </select>
 
     <insert id="SaveBotBankHistoryRate" parameterType="java.util.List">
-        INSERT INTO bot_bank_history_rate(bankCode, exchangeContent, createDate) VALUES
+        INSERT INTO bot_bank_history_rate(bank_code,
+        buy_bank_note_rate, buy_spot_rate, buy_10days_forward_rate, buy_30days_forward_rate, buy_60days_forward_rate, buy_90days_forward_rate, buy_120days_forward_rate, buy_150days_forward_rate, buy_180days_forward_rate,
+        sell_bank_note_rate, sell_spot_rate, sell_10days_forward_rate, sell_30days_forward_rate, sell_60days_forward_rate, sell_90days_forward_rate, sell_120days_forward_rate, sell_150days_forward_rate, sell_180days_forward_rate,
+        create_date) VALUES
         <foreach item="item" index="index" collection="botBankHistoryRateList" separator=",">
-            (#{item.bankCode}, #{item.exchangeContent}, #{item.createDate})
+            (#{item.bank_code},
+            #{item.buy_bank_note_rate}, #{item.buy_spot_rate}, #{item.buy_10days_forward_rate}, #{item.buy_30days_forward_rate}, #{item.buy_60days_forward_rate}, #{item.buy_90days_forward_rate}, #{item.buy_120days_forward_rate}, #{item.buy_150days_forward_rate}, #{item.buy_180days_forward_rate},
+            #{item.sell_bank_note_rate}, #{item.sell_spot_rate}, #{item.sell_10days_forward_rate}, #{item.sell_30days_forward_rate}, #{item.sell_60days_forward_rate}, #{item.sell_90days_forward_rate}, #{item.sell_120days_forward_rate}, #{item.sell_150days_forward_rate}, #{item.sell_180days_forward_rate},
+            #{item.create_date})
         </foreach>
     </insert>
 
-    <delete id="DeleteBotBankHistoryRate">
-        DELETE FROM bot_bank_history_rate WHERE id = #{id};
-    </delete>
+<!--    <delete id="DeleteBotBankHistoryRate">-->
+<!--        DELETE FROM bot_bank_history_rate WHERE id = #{id};-->
+<!--    </delete>-->
 
-    <update id="UpdateBotBankHistoryRate">
-        UPDATE bot_bank_history_rate SET  = #{exchangeContent} WHERE id = #{id};
-    </update>
+<!--    <update id="UpdateBotBankHistoryRate">-->
+<!--        UPDATE bot_bank_history_rate SET  = #{exchangeContent} WHERE id = #{id};-->
+<!--    </update>-->
 </mapper>

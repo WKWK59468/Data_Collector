@@ -34,8 +34,7 @@ public class LineNotifyHelper {
         HttpEntity<MultiValueMap<String, String>> httpEntity = new HttpEntity<>(postParameters,headers);
 
         RestTemplate restTemplate = new RestTemplate();
-        ResponseEntity<JsonNode> responseEntity = restTemplate.postForEntity(url, httpEntity, JsonNode.class);
 
-        return responseEntity;
+        return restTemplate.postForEntity(url, httpEntity, JsonNode.class);
     }
 }

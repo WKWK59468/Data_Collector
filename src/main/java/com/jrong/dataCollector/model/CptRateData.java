@@ -1,12 +1,21 @@
 package com.jrong.dataCollector.model;
 
 public class CptRateData {
+    private int id;
     private String bankCode;
     private String year;
     private String month;
     private String tenDays;
     private Double buy;
     private Double sell;
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
 
     public String getBankCode() {
         return bankCode;
@@ -59,7 +68,8 @@ public class CptRateData {
     @Override
     public String toString() {
         return "CptRateData{" +
-                "bankCode='" + bankCode + '\'' +
+                "id=" + id +
+                ", bankCode='" + bankCode + '\'' +
                 ", year='" + year + '\'' +
                 ", month='" + month + '\'' +
                 ", tenDays='" + tenDays + '\'' +

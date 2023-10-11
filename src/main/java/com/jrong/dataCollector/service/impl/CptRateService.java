@@ -13,74 +13,64 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class CptRateService implements ICptRateService {
-    private final CptHistoryRateMapper cptHistoryRateMapper;
-    private final LineNotifyHelper lineNotifyHelper;
-    private final StringRedisTemplate stringRedisTemplate;
-
     @Autowired
-    public CptRateService(
-            CptHistoryRateMapper cptHistoryRateMapper,
-            LineNotifyHelper lineNotifyHelper,
-            StringRedisTemplate stringRedisTemplate){
-        this.cptHistoryRateMapper = cptHistoryRateMapper;
-        this.lineNotifyHelper = lineNotifyHelper;
-        this.stringRedisTemplate = stringRedisTemplate;
-    }
+    private CptHistoryRateMapper cptHistoryRateMapper;
+    @Autowired
+    private LineNotifyHelper lineNotifyHelper;
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
 
     @Override
-    public boolean SaveCptHistoryRate(String cptHistoryRateData){
-        try {
-            List<CptRateData> SaveCptRateDataList = new ArrayList<>();
-            ObjectMapper mapper = new ObjectMapper();
-            JsonNode rateDataMap = mapper.readTree(cptHistoryRateData);
+    public boolean SaveCptHistoryRate(String cptHistoryRateData) throws JsonProcessingException {
 
-            rateDataMap.forEach( data -> {
-                try {
-                    ObjectMapper objectMapper = new ObjectMapper();
-                    CptRateData newCptRateData = objectMapper.treeToValue(data, CptRateData.class);
-                    CptRateData cptRateData = new CptRateData();
+        List<CptRateData> SaveCptRateDataList = new ArrayList<>();
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode rateDataMap = mapper.readTree(cptHistoryRateData);
 
-                    cptRateData.setBankCode(newCptRateData.getBankCode());
-                    cptRateData.setYear(newCptRateData.getYear());
-                    cptRateData.setMonth(newCptRateData.getMonth());
-                    cptRateData.setTenDays(newCptRateData.getTenDays());
-                    cptRateData.setBuy(newCptRateData.getBuy());
-                    cptRateData.setSell(newCptRateData.getSell());
-                    SaveCptRateDataList.add(cptRateData);
+        rateDataMap.forEach( data -> {
+            CptRateData cptRateData = new CptRateData();
+            dataProcess(data, cptRateData);
+            SaveCptRateDataList.add(cptRateData);
+        });
 
-                } catch (JsonProcessingException e) {
-                    lineNotifyHelper.SendMessage("SaveBotBankHistoryRate JsonProcessingException: " + e.getMessage());
-                    throw new RuntimeException(e);
-                }
-            });
-            return cptHistoryRateMapper.SaveCptHistoryRate(SaveCptRateDataList) > 0;
-        } catch (JsonProcessingException e) {
-            lineNotifyHelper.SendMessage("SaveBotBankHistoryRate JsonProcessingException: " + e.getMessage());
-            throw new RuntimeException(e);
-        }
+        return cptHistoryRateMapper.SaveCptHistoryRate(SaveCptRateDataList) > 0;
     }
 
     @Override
     public String GetCptCurrentRate(){
-        try{
-            String cptCurrentData = stringRedisTemplate.opsForValue().get("CptCurrentData");
+        Optional<String> cptCurrentData = Optional.ofNullable(stringRedisTemplate.opsForValue().get("CptCurrentData"));
 
-            if( cptCurrentData == null ){
-                lineNotifyHelper.SendMessage("Get Cpt CurrentRate Failure");
-            }
+        cptCurrentData.ifPresentOrElse(
+                data -> {},
+                () -> lineNotifyHelper.SendMessage("Get Cpt CurrentRate Failure")
+        );
 
-            return cptCurrentData;
-        }catch (Exception e){
-            lineNotifyHelper.SendMessage("Get Cpt Current Rate Error: " + e.getMessage());
-            throw new RuntimeException(e);
-        }
+        return cptCurrentData.orElse(null);
     }
 
     @Override
     public List<CptRateData> GetCptHistoryRate(){
         return cptHistoryRateMapper.GetCptHistoryRate();
+    }
+
+    private static void dataProcess(JsonNode data, CptRateData cptRateData){
+        try{
+            ObjectMapper objectMapper = new ObjectMapper();
+            CptRateData newCptRateData = objectMapper.treeToValue(data, CptRateData.class);
+
+            cptRateData.setBankCode(newCptRateData.getBankCode());
+            cptRateData.setYear(newCptRateData.getYear());
+            cptRateData.setMonth(newCptRateData.getMonth());
+            cptRateData.setTenDays(newCptRateData.getTenDays());
+            cptRateData.setBuy(newCptRateData.getBuy());
+            cptRateData.setSell(newCptRateData.getSell());
+
+        }catch (JsonProcessingException e){
+            throw new RuntimeException(e);
+        }
     }
 }

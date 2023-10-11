@@ -15,20 +15,12 @@ import java.util.List;
 @RestController
 @RequestMapping("/cptRate")
 public class CptRateController {
-    private final CptRateService cptRateService;
-    private final CptService cptService;
-    private final LineNotifyHelper lineNotifyHelper;
-
     @Autowired
-    public CptRateController(
-            CptRateService cptRateService,
-            CptService cptService,
-            LineNotifyHelper lineNotifyHelper){
-        this.cptRateService = cptRateService;
-
-        this.cptService = cptService;
-        this.lineNotifyHelper = lineNotifyHelper;
-    }
+    private CptRateService cptRateService;
+    @Autowired
+    private CptService cptService;
+    @Autowired
+    private LineNotifyHelper lineNotifyHelper;
 
     @GetMapping("/current")
     public ResponseEntity<String> GetCptCurrentData(){

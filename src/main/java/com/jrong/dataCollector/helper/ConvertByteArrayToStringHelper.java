@@ -23,8 +23,8 @@ public class ConvertByteArrayToStringHelper {
             BufferedReader bufferedReader = new BufferedReader(reader);
 
             StringBuilder stringBuilder = new StringBuilder();
-            String line;
-            while ((line = bufferedReader.readLine()) != null) {
+            String line = bufferedReader.readLine();
+            while (line != null) {
                 stringBuilder.append(line).append("\n");
             }
 
@@ -32,8 +32,7 @@ public class ConvertByteArrayToStringHelper {
 
             return stringBuilder.toString();
         } catch (IOException e) {
-            e.printStackTrace();
-            lineNotifyHelper.SendMessage("ConvertByteArrayToStringHelper Error: " + e.toString());
+            lineNotifyHelper.SendMessage("ConvertByteArrayToStringHelper Error: " + e);
             return null;
         }
     }
