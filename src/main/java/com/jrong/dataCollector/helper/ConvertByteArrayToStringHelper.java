@@ -23,8 +23,9 @@ public class ConvertByteArrayToStringHelper {
             BufferedReader bufferedReader = new BufferedReader(reader);
 
             StringBuilder stringBuilder = new StringBuilder();
-            String line = bufferedReader.readLine();
-            while (line != null) {
+
+            String line;
+            while ((line = bufferedReader.readLine()) != null) {
                 stringBuilder.append(line).append("\n");
             }
 
