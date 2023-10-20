@@ -19,6 +19,7 @@ import org.springframework.stereotype.Component;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 
+
 @Component
 public class CptRateSchedule {
     @Autowired
@@ -36,18 +37,16 @@ public class CptRateSchedule {
     private final AtomicInteger consecutiveFailures = new AtomicInteger(0);
 
     @Scheduled(cron = "0 0 0/5 * * ?")
-    public void SaveCptCurrentRateData(){
+    public void SaveCptCurrentRateData() {
         try {
             String values = cptService.GetCptCurrentData();
             JsonNode currentData = objectMapper.readTree(values);
-            Optional<JsonNode> currentDataOpt = Optional.of(currentData);
-            currentDataOpt.ifPresent(this::dataProcess);
             stringRedisTemplate.opsForValue().set("CptCurrentData", currentData.toString());
             consecutiveFailures.set(0);
 
         } catch (Exception e) {
             Optional<Integer> lastConsecutiveFailures = Optional.of(consecutiveFailures.get());
-            lastConsecutiveFailures.ifPresent( lastFailures -> consecutiveFailures.set(lastFailures+1));
+            lastConsecutiveFailures.ifPresent(lastFailures -> consecutiveFailures.set(lastFailures + 1));
 
             lastConsecutiveFailures.filter(lastFailures -> lastFailures >= 2).ifPresent(lastFailures -> {
                 lineNotifyHelper.SendMessage("CptRate Schedule Update Failure");
@@ -76,21 +75,5 @@ public class CptRateSchedule {
             lineNotifyHelper.SendMessage("Cpt History Schedule Error: " + e.getMessage());
             throw new RuntimeException(e);
         }
-    }
-
-    private void dataProcess(JsonNode data) {
-        data.forEach(value -> {
-            try {
-                CptRateData rateData = objectMapper.treeToValue(value, CptRateData.class);
-
-                Optional<CptRateData> dataOpt = Optional.of(rateData);
-
-                dataOpt.filter(opt -> opt.getBankCode().equals("JPY") && opt.getBuy() <= 0.22).ifPresent(opt -> {
-                    context.publishEvent(new RateEvent(this, "CPT", rateData.getBuy()));
-                });
-            } catch (JsonProcessingException e) {
-                throw new RuntimeException(e);
-            }
-        });
     }
 }

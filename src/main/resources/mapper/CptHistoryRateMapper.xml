@@ -14,4 +14,10 @@
             (#{item.bankCode}, #{item.year}, #{item.month}, #{item.tenDays}, #{item.buy}, #{item.sell} )
         </foreach>
     </insert>
+
+    <update id="UpdateCptHistoryRate" parameterType="java.util.List">
+        <foreach item="item" index="index" collection="CptRateDataList" separator=",">
+            UPDATE cpt_history_rate SET buy=#{item.buy},sell=#{item.buy} WHERE bankCode==#{item.bankCode} AND year==#{item.year} AND month==#{item.month} AND tenDays==#{item.tenDays};
+        </foreach>
+    </update>
 </mapper>

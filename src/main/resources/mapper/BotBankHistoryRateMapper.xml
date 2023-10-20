@@ -5,7 +5,7 @@
 <mapper namespace="com.jrong.dataCollector.dao.BotBankHistoryRateMapper">
 
     <select id="GetBotHistoryRate">
-        SELECT * FROM bot_bank_history_rate;
+        SELECT * FROM bot_bank_history_rate WHERE create_date=#{date};
     </select>
 
     <insert id="SaveBotBankHistoryRate" parameterType="java.util.List">
@@ -21,11 +21,30 @@
         </foreach>
     </insert>
 
-<!--    <delete id="DeleteBotBankHistoryRate">-->
-<!--        DELETE FROM bot_bank_history_rate WHERE id = #{id};-->
-<!--    </delete>-->
+    <delete id="DeleteBotBankHistoryRate">
+        DELETE FROM bot_bank_history_rate WHERE create_date=#{date};
+    </delete>
 
-<!--    <update id="UpdateBotBankHistoryRate">-->
-<!--        UPDATE bot_bank_history_rate SET  = #{exchangeContent} WHERE id = #{id};-->
-<!--    </update>-->
+    <update id="UpdateBotBankHistoryRate">
+        UPDATE bot_bank_history_rate SET
+        buy_bank_note_rate = #{buy_bank_note_rate},
+        buy_spot_rate = #{buy_spot_rate},
+        buy_10days_forward_rate = #{buy_10days_forward_rate},
+        buy_30days_forward_rate = #{buy_30days_forward_rate},
+        buy_60days_forward_rate = #{buy_60days_forward_rate},
+        buy_90days_forward_rate = #{buy_90days_forward_rate},
+        buy_120days_forward_rate = #{buy_120days_forward_rate},
+        buy_150days_forward_rate = #{buy_150days_forward_rate},
+        buy_180days_forward_rate = #{buy_180days_forward_rate},
+        sell_bank_note_rate = #{sell_bank_note_rate},
+        sell_spot_rate = #{sell_spot_rate},
+        sell_10days_forward_rate = #{sell_10days_forward_rate},
+        sell_30days_forward_rate = #{sell_30days_forward_rate},
+        sell_60days_forward_rate = #{sell_60days_forward_rate},
+        sell_90days_forward_rate = #{sell_90days_forward_rate},
+        sell_120days_forward_rate = #{sell_120days_forward_rate},
+        sell_150days_forward_rate = #{sell_150days_forward_rate},
+        sell_180days_forward_rate = #{sell_180days_forward_rate}
+        WHERE create_date = #{date} AND bank_code = #{bank_code};
+    </update>
 </mapper>

@@ -1,6 +1,7 @@
-package com.jrong.dataCollector.helper;
+package com.jrong.dataCollector.service.impl;
 
-import com.jrong.dataCollector.service.impl.CheckRateExistService;
+import com.jrong.dataCollector.helper.ConvertByteArrayToStringHelper;
+import com.jrong.dataCollector.service.IDataParserService;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.LaxRedirectStrategy;
@@ -17,14 +18,11 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
 @Component
-public class DataParserHelper {
+public class DataParserService implements IDataParserService {
     @Autowired
     private ConvertByteArrayToStringHelper convertByteArrayToStringHelper;
-    @Autowired
-    private LineNotifyHelper lineNotifyHelper;
-    @Autowired
-    private CheckRateExistService checkRateExistService;
 
+    @Override
     public String[] DataParser(String url){
         AtomicReference<String> data = new AtomicReference<>("");
         RestTemplate restTemplate = new RestTemplate();

@@ -2,8 +2,8 @@ package com.jrong.dataCollector.controller;
 
 import com.jrong.dataCollector.helper.LineNotifyHelper;
 import com.jrong.dataCollector.model.CptRateData;
-import com.jrong.dataCollector.service.impl.CptRateService;
-import com.jrong.dataCollector.service.impl.CptService;
+import com.jrong.dataCollector.service.ICptRateService;
+import com.jrong.dataCollector.service.ICptService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,9 +16,9 @@ import java.util.List;
 @RequestMapping("/cptRate")
 public class CptRateController {
     @Autowired
-    private CptRateService cptRateService;
+    private ICptRateService cptRateService;
     @Autowired
-    private CptService cptService;
+    private ICptService cptService;
     @Autowired
     private LineNotifyHelper lineNotifyHelper;
 
