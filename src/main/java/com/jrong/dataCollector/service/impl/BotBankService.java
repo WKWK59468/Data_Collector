@@ -23,7 +23,7 @@ public class BotBankService implements IBotBankService {
 
     @Override
     public String GetBotRateData() {
-        String data = dataProcessFactory.DataProcess("botCurrent");
+        String data = dataProcessFactory.GetBotCurrentData();
         checkRateExistService.CheckRateExist("Bot Rate", data);
         return data;
     }

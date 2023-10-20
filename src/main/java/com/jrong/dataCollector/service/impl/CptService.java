@@ -20,14 +20,14 @@ public class CptService implements ICptService {
 
     @Override
     public String GetCptCurrentData() {
-        String data = dataProcessFactory.DataProcess("cptCurrent");
+        String data = dataProcessFactory.GetCptCurrentData();
         checkRateExistService.CheckRateExist("Cpt Current", data);
         return data;
     }
 
     @Override
     public String GetCptHistoryData() {
-        String data = dataProcessFactory.DataProcess("cptHistory");
+        String data = dataProcessFactory.GetCptHistoryData();
         checkRateExistService.CheckRateExist("Cpt History", data);
         return data;
     }

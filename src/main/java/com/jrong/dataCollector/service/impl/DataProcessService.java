@@ -3,7 +3,10 @@ package com.jrong.dataCollector.service.impl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.jrong.dataCollector.service.IDataParserService;
 import com.jrong.dataCollector.service.IDataProcessService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.sql.Timestamp;
@@ -13,8 +16,19 @@ import java.util.concurrent.atomic.AtomicReference;
 
 @Component
 public class DataProcessService implements IDataProcessService {
+    @Value("${cptUrl}")
+    private String cptUrl;
+    @Value("${cptHistoryUrl}")
+    private String cptHistoryUrl;
+    @Value("${botUrl}")
+    private String botUrl;
+    @Autowired
+    private IDataParserService dataParser;
+
     @Override
-    public String CptCurrentDataProcess(String[] lines) {
+    public String CptCurrentDataProcess() {
+        String[] lines =  dataParser.DataParser(cptUrl);
+
         AtomicReference<String> json = new AtomicReference<>("");
 
         ObjectMapper jsonArray = new ObjectMapper();
@@ -41,7 +55,9 @@ public class DataProcessService implements IDataProcessService {
     }
 
     @Override
-    public String CptHistoryDataProcess(String[] lines) {
+    public String CptHistoryDataProcess() {
+        String[] lines = dataParser.DataParser(cptHistoryUrl);
+
         AtomicReference<String> json = new AtomicReference<>("");
 
         ObjectMapper jsonArray = new ObjectMapper();
@@ -75,7 +91,9 @@ public class DataProcessService implements IDataProcessService {
     }
 
     @Override
-    public String BotCurrentDataProcess(String[] lines) {
+    public String BotCurrentDataProcess() {
+        String[] lines = dataParser.DataParser(botUrl);
+
         AtomicReference<String> json = new AtomicReference<>("");
 
         ObjectMapper jsonArray = new ObjectMapper();
