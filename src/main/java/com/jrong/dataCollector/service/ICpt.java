@@ -1,6 +1,6 @@
 package com.jrong.dataCollector.service;
 
-public interface ICptService {
+public interface ICpt {
     String GetCptCurrentData();
     String GetCptHistoryData();
 }

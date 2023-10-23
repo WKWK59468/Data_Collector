@@ -6,9 +6,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jrong.dataCollector.dao.CptHistoryRateMapper;
 import com.jrong.dataCollector.helper.LineNotifyHelper;
 import com.jrong.dataCollector.model.CptRateData;
-import com.jrong.dataCollector.service.ICptRateService;
+import com.jrong.dataCollector.service.ICptRate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -18,7 +19,7 @@ import java.util.Optional;
 import static com.jrong.dataCollector.helper.ExceptionHelper.lambdaWarpper;
 
 @Service
-public class CptRateService implements ICptRateService {
+public class CptRate implements ICptRate {
     @Autowired
     private CptHistoryRateMapper cptHistoryRateMapper;
     @Autowired
@@ -27,7 +28,7 @@ public class CptRateService implements ICptRateService {
     private StringRedisTemplate stringRedisTemplate;
 
     @Override
-    public boolean SaveCptHistoryRate(String cptHistoryRateData) throws JsonProcessingException {
+    public Boolean SaveCptHistoryRate(String cptHistoryRateData) throws JsonProcessingException {
 
         List<CptRateData> SaveCptRateDataList = new ArrayList<>();
         ObjectMapper mapper = new ObjectMapper();
@@ -45,7 +46,7 @@ public class CptRateService implements ICptRateService {
     }
 
     @Override
-    public String GetCptCurrentRate() {
+    public ResponseEntity<String> GetCptCurrentRate() {
         Optional<String> cptCurrentData = Optional.ofNullable(stringRedisTemplate.opsForValue().get("CptCurrentData"));
 
         cptCurrentData.ifPresentOrElse(
@@ -54,12 +55,19 @@ public class CptRateService implements ICptRateService {
                 () -> lineNotifyHelper.SendMessage("Get Cpt CurrentRate Failure")
         );
 
-        return cptCurrentData.orElse(null);
+        if(!cptCurrentData.isPresent()){
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok().body(cptCurrentData.get());
     }
 
     @Override
-    public List<CptRateData> GetCptHistoryRate() {
-        return cptHistoryRateMapper.GetCptHistoryRate();
+    public ResponseEntity<List<CptRateData>> GetCptHistoryRate() {
+        Optional<List<CptRateData>> cptRateData = Optional.of(cptHistoryRateMapper.GetCptHistoryRate());
+        if(!cptRateData.isPresent()){
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok().body(cptRateData.get());
     }
 
     private static void dataProcess(JsonNode data, CptRateData cptRateData) throws JsonProcessingException {

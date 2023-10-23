@@ -1,6 +1,6 @@
 package com.jrong.dataCollector.service;
 
 
-public interface ICheckRateExistService {
+public interface ICheckRateExist {
     void CheckRateExist(String service, String data);
 }

@@ -1,7 +1,7 @@
 package com.jrong.dataCollector.service.impl;
 
 import com.jrong.dataCollector.helper.ConvertByteArrayToStringHelper;
-import com.jrong.dataCollector.service.IDataParserService;
+import com.jrong.dataCollector.service.IDataParser;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.LaxRedirectStrategy;
@@ -18,12 +18,12 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
 @Component
-public class DataParserService implements IDataParserService {
+public class DataParser implements IDataParser {
     @Autowired
     private ConvertByteArrayToStringHelper convertByteArrayToStringHelper;
 
     @Override
-    public String[] DataParser(String url){
+    public String[] Parser(String url){
         AtomicReference<String> data = new AtomicReference<>("");
         RestTemplate restTemplate = new RestTemplate();
 

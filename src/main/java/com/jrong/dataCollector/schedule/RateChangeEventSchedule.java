@@ -6,8 +6,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jrong.dataCollector.listener.RateEvent;
 import com.jrong.dataCollector.model.CptRateData;
 import com.jrong.dataCollector.model.request.SaveBotBankHistory;
-import com.jrong.dataCollector.service.impl.BotBankService;
-import com.jrong.dataCollector.service.impl.CptService;
+import com.jrong.dataCollector.service.impl.BotBank;
+import com.jrong.dataCollector.service.impl.Cpt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -20,9 +20,9 @@ import static com.jrong.dataCollector.helper.ExceptionHelper.lambdaWarpper;
 @Component
 public class RateChangeEventSchedule {
     @Autowired
-    private BotBankService botBankService;
+    private BotBank botBank;
     @Autowired
-    private CptService cptService;
+    private Cpt cpt;
     @Autowired
     private ApplicationContext context;
     @Autowired
@@ -30,7 +30,7 @@ public class RateChangeEventSchedule {
 
     @Scheduled(cron = "0 0 9 * * ?")
     public void BotRateData() throws JsonProcessingException {
-        String value = botBankService.GetBotRateData();
+        String value = botBank.GetBotRateData();
         JsonNode botRateData = objectMapper.readTree(value);
         Optional<JsonNode> currentDataOpt = Optional.of(botRateData);
         currentDataOpt.ifPresent(data ->
@@ -48,7 +48,7 @@ public class RateChangeEventSchedule {
 
     @Scheduled(cron = "0 0 9 * * ?")
     public void CptRateData() throws JsonProcessingException {
-        String values = cptService.GetCptCurrentData();
+        String values = cpt.GetCptCurrentData();
         JsonNode currentData = objectMapper.readTree(values);
         Optional<JsonNode> currentDataOpt = Optional.of(currentData);
         currentDataOpt.ifPresent(data -> data.forEach(lambdaWarpper(

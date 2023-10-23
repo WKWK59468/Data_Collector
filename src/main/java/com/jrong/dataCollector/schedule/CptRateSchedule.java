@@ -1,14 +1,10 @@
 package com.jrong.dataCollector.schedule;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jrong.dataCollector.helper.LineNotifyHelper;
-import com.jrong.dataCollector.listener.RateEvent;
-import com.jrong.dataCollector.model.BotBankRateData;
-import com.jrong.dataCollector.model.CptRateData;
-import com.jrong.dataCollector.service.impl.CptRateService;
-import com.jrong.dataCollector.service.impl.CptService;
+import com.jrong.dataCollector.service.impl.CptRate;
+import com.jrong.dataCollector.service.impl.Cpt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -29,9 +25,9 @@ public class CptRateSchedule {
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
     @Autowired
-    private CptService cptService;
+    private Cpt cpt;
     @Autowired
-    private CptRateService cptRateService;
+    private CptRate cptRate;
     @Autowired
     private LineNotifyHelper lineNotifyHelper;
     private final AtomicInteger consecutiveFailures = new AtomicInteger(0);
@@ -39,7 +35,7 @@ public class CptRateSchedule {
     @Scheduled(cron = "0 0 0/5 * * ?")
     public void SaveCptCurrentRateData() {
         try {
-            String values = cptService.GetCptCurrentData();
+            String values = cpt.GetCptCurrentData();
             JsonNode currentData = objectMapper.readTree(values);
             stringRedisTemplate.opsForValue().set("CptCurrentData", currentData.toString());
             consecutiveFailures.set(0);
@@ -61,12 +57,12 @@ public class CptRateSchedule {
     @Scheduled(cron = "0 10 1,8,18 5,6,7,15,16,17,25,26,27 * ?")
     public void CptHistoryRateData() {
         try {
-            String value = cptService.GetCptHistoryData();
+            String value = cpt.GetCptHistoryData();
             JsonNode cptHistoryData = objectMapper.readTree(value);
 
             lineNotifyHelper.SendMessage("Get History Data Success");
 
-            Optional<Boolean> isSuccess = Optional.of(cptRateService.SaveCptHistoryRate(cptHistoryData.toString()));
+            Optional<Boolean> isSuccess = Optional.of(cptRate.SaveCptHistoryRate(cptHistoryData.toString()));
             isSuccess.ifPresentOrElse(
                     success -> lineNotifyHelper.SendMessage("Save Cpt History Data Success"),
                     () -> lineNotifyHelper.SendMessage("Save Cpt History Data Failure"));

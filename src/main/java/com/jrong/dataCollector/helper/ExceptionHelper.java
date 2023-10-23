@@ -1,6 +1,5 @@
 package com.jrong.dataCollector.helper;
 
-import org.assertj.core.api.ThrowingConsumer;
 import org.springframework.stereotype.Component;
 
 import java.util.function.Consumer;
@@ -14,9 +13,9 @@ public class ExceptionHelper {
             }catch (Exception ex){
                 try {
                     E cxCast = clazz.cast(ex);
-                    System.err.println("Exception : " + cxCast.getMessage());
+                    System.err.println("Runtime Exception : " + cxCast.getMessage());
                 }catch (ClassCastException e){
-                    throw ex;
+                    throw e;
                 }
             }
         };

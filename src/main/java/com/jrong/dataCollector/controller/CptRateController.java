@@ -2,8 +2,8 @@ package com.jrong.dataCollector.controller;
 
 import com.jrong.dataCollector.helper.LineNotifyHelper;
 import com.jrong.dataCollector.model.CptRateData;
-import com.jrong.dataCollector.service.ICptRateService;
-import com.jrong.dataCollector.service.ICptService;
+import com.jrong.dataCollector.service.ICptRate;
+import com.jrong.dataCollector.service.ICpt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,19 +16,19 @@ import java.util.List;
 @RequestMapping("/cptRate")
 public class CptRateController {
     @Autowired
-    private ICptRateService cptRateService;
+    private ICptRate cptRateService;
     @Autowired
-    private ICptService cptService;
+    private ICpt cptService;
     @Autowired
     private LineNotifyHelper lineNotifyHelper;
 
     @GetMapping("/current")
     public ResponseEntity<String> GetCptCurrentData(){
-        return ResponseEntity.ok().body(cptRateService.GetCptCurrentRate());
+        return cptRateService.GetCptCurrentRate();
     }
 
     @GetMapping("/history")
     public ResponseEntity<List<CptRateData>> GetCptHistoryData(){
-        return ResponseEntity.ok().body(cptRateService.GetCptHistoryRate());
+        return cptRateService.GetCptHistoryRate();
     }
 }
